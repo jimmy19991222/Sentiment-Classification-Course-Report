@@ -1,206 +1,247 @@
-# 文本情感分析报告(sentiment-classification-course-report)
+# Sentiment-Classification-Course-Report
 
-摘要：本文对文本情感分析的方法进行总结，分为了基于情感词典的方法和基于神经网络的方法，并对经典模型进行了简要介绍。对于实际的数据集分类，本文使用了Transformer库的”bert-base-chinese”模型进行训练和预测，获得了较好的情感分类效果。
 
-关键词：文本情感分析；情感分类；深度学习；Transformer
 
-## 一、  研究目的和意义
+### Table of contents
 
-网络已经逐渐成为现代信息的载体，随着互联网的普及，个人数据爆炸式增长，如新闻评论，文章留言，影视分析，微博等。由普通民众产生的文本信息积聚，成为一项具有实际分析价值的资源。文本情感分析，就是通过对这些主观性文本内容的分析、推理、加工，识别其情感，如高兴、伤心，或者积极、消极、中性等，甚至可以通过长时间地跟踪研究，得出某个人或群体对待特定事物的情感和价值取消的变化趋势。文本情感分析有以下典型的应用场景：
+- [Abstract](#abstract)
 
-* 用户评论分析与决策
+- [1. Purpose and significance of the study](#1-purpose-and-significance-of-the-study)
 
-比如商家可以分析用户的消费习惯，更针对性地改进产品；影视公司可以分析观众们对旗下电影的评价，作为电影的评价标准之一。而对于个人，在购买某一产品之前，人们往往倾向于网上查询该产品的相关评论，并通过与其他产品的对比来做最终的决策。由于用户没有足够的时间和精力浏览全部的评论信息， 导致最终的决策带有风险性。情感分析技术则可以很好解决这一难题。该技术首先自动获取大量的相关评论信息，进而挖掘出主要的产品属性(如:“油耗”)和评价词语(如:“高”)，最终通过统计归纳推理，给用户提供该产品各个属性的评价意见，方便用户做最终的决策。
+- [2. Current status of domestic and international research](#2-current-status-of-domestic-and-international-research)
+  - [2.1 Text sentiment analysis based on sentiment dictionary](#21-text-sentiment-analysis-based-on-sentiment-dictionary)
+    - [2.1.1 Lexicon-based text sentiment analysis](#211-lexicon-based-text-sentiment-analysis)
+    - [2.1.2 Summary of word division methods for text](#212-summary-of-word-division-methods-for-text)
+      - [2.1.2.1 Forward maximum matching algorithm MM](#2121-forward-maximum-matching-algorithm-mm)
+      - [2.1.2.2 Reverse Maximum Matching Algorithm RMM](#2122-reverse-maximum-matching-algorithm-rmm)
+      - [2.1.2.3 Neighborhood Matching Algorithm](#2123-neighborhood-matching-algorithm)
+    - [2.1.3 Advantages and disadvantages analysis](#213-advantages-and-disadvantages-analysis)
+  - [2.2 Machine learning based approach](#22-machine-learning-based-approach)
+    - [2.2.1 Text preprocessing](#221-text-preprocessing)
+      - [2.2.1.1 Feature Extraction](#2211-feature-extraction)
+      - [2.2.1.2 Text vectorization](#2212-text-vectorization)
+      - [2.2.1.3 Feature selection](#2213-feature-selection)
+    - [2.2.2 Selection of classification algorithms](#222-selection-of-classification-algorithms)
+      - [2.2.2.1 SVM-based classification algorithm](#2221-svm-based-classification-algorithm)
+      - [2.2.2.2 Deep learning based classification algorithm](#2222-deep-learning-based-classification-algorithm)
+  
+- [3. Research Methodology](#3-research-methodology)
+  - [3.1 BERT's input and output](#31-berts-input-and-output)
+  - [3.2 Model structure](#32-model-structure)
+  
+- [4. Experimental results and analysis](#4-experimental-results-and-analysis)
 
-* 舆情监控
+- [5. Conclusion](#5-conclusion)
 
-越来越多的网民愿意通过互联网表达观点，网络逐渐成为舆情话题产生和传播的主要场所。网络信息和社会信息的交融对社会的直接影响越来越大，甚至关系到国家信息安全和长治久安。因此，社会管理者应及时对这些舆论进行反馈。文本情感分析可以自动化地对舆情话题进行分类，筛查，以达到对不当和恶意言论的监控。
+- [6.  References](#6--references)
 
-*  信息预测
+  
 
-某一个新事件的发生或者网络上对某个事件的热议都在很大程度上左右着人们的思维和行动。比如在金融市场上，网络上对某支股票的热议都在很大程度上左右着庄家和散户的行为，同时进一步影响着股市变化的趋势。因此，信息预测变得非常必要。情感分析技术可以帮助用户通过对互联网上的新闻、帖子等信息源进行分析，预测某一事件的未来状况。
+## Abstract
 
-除了丰富的应用场景，文本情感分析也是一个极具挑战性的NLP研究课题，涉及多项非常有挑战性的研究任务，它在数据挖掘、Web挖掘、信息检索等领域也得到了广泛的研究。[1][2]
+In this paper, we first provided a summary of text sentiment analysis methods which are divided into sentiment lexicon based methods and neural network based methods, and a brief introduction of classical models. Then we used the `bert-base-chines` model of Transformer library for training and prediction, which achieved good sentiment classification results.
 
-## 二、  国内外研究现状
+**Keywords**: text sentiment analysis; sentiment classification; deep learning; Transformer.
 
-### 1. 基于情感词典的文本情感分析
 
-#### 1.1 基于词典的文本情感分析思路
 
-这种方法的思想非常朴素，即按照一定策略将待分析的文本分词，并将单词与一个机器词典中的词条进行匹配，若在词典中找到某个字符串，则按照词典标记文本。
+## 1. Purpose and significance of the study
 
-以知网的情感词库为例，原始字典按照习惯将词汇分为三大类： 
+The Internet has gradually become the carrier of modern information. With the popularization of the Internet, personal data has exploded, such as news comments, article messages, film and television analysis, microblogs, etc. The text information generated by the general public has accumulated. and become a valuable resource for practical analysis. Text sentiment analysis is to analyze, reason, and process these subjective text contents to identify their emotions, such as happy, sad, or positive, negative, neutral, etc. It can even be used in long time tracking studies to derive the trend of emotion and value orientation of a certain person or group towards a specific subject. Text sentiment analysis has the following typical application scenarios.
 
-情感词（积极评价词、积极情感词、消极评价词、消极情感词），程度词（从最重的most程度依次降低到least程度，共5个等级）和否定词。基于以上特点，否定词的存在可以用来判别是否进行词汇的极性反转，程度词的存在可以给予不同的情感词不同的分数，而情感词可以整合成积极词和消极词两部分。
+* **User comment analysis and decision making**
 
- 
+  For example, businesses can analyze users' consumption habits to improve their products; movie companies can analyze audience's comments on their movies as one of the evaluation criteria for movies. For individuals, before buying a product, people tend to check the reviews of the product online and make a final decision by comparing it with other products. Since users do not have enough time and energy to browse through all the reviews, the final decision could be risky. Sentiment analysis technology could help user's decision making process by automatically obtaining a large number of related reviews, digging out the main product attributes (e.g. "fuel consumption") and evaluation keywords (e.g. "high"), and finally providing users with the evaluation opinions of each attribute of the product through statistical induction and reasoning.
 
-#### 1.2 文本的分词方法总结
+* **Public opinion monitoring**
 
-在进行字典匹配之前，我们需要将文本按一定策略分词，本文总结了一些基于机器词典的朴素分词方法。
+  More and more Internet users are willing to express their opinions through the Internet, and the Internet has gradually become the main place for the generation and dissemination of public opinion topics. The intermingling of network information and social information has an increasing direct impact on society and even relates to a country's information security and long-term stability. Therefore, social managers should monitor public opinions and provide timely feedback. Text sentiment analysis can automate the classification of public opinion topics and screen them to achieve monitoring of inappropriate and malicious speech.
 
- 
+* **Information Prediction**
 
-##### 1.2.1 正向最大匹配算法MM
+  The occurrence of a new event or the buzz on the Internet about a certain event largely influences people's thinking and actions. For example, in the financial market, the buzz about a certain stock on the Internet largely influences the behavior of bankers and retail investors, and further influences the trend of stock market changes. Therefore, information prediction becomes very necessary. Sentiment analysis technology can help users predict the future status of an event by analyzing news, posts and other information sources on the Internet.
 
-先从左向右取待切分的语句中的m个字符作为匹配字段，m为机器词典中最长词条个数。再查找机器词典并进行匹配。若匹配成功，则将这个匹配字段作为一个词切分出来。若匹配不成功，则将这个匹配字段的最后一个字去掉，剩下的字符串作为新的匹配字段，进行再次匹配，重复以上过程，直到切分出所有词为止。
+In addition to rich application scenarios, text sentiment analysis is also a challenging NLP research topic which involves several challenging research tasks. It has also been extensively studied in the fields of data mining, Web mining, and information retrieval. [[1]](# 6.  References) [[2]](# 6.  References)
 
- 
 
-##### 1.2.2 逆向最大匹配算法RMM
 
-该算法是正向最大匹配的逆向（最大匹配的顺序不是从首字母开始，而是从末尾开始），匹配不成功，将匹配字段的最前一个字去掉，实验表明，逆向最大匹配算法要优于正向最大匹配算法。
+## 2. Current status of domestic and international research
 
- 
+### 2.1 Text sentiment analysis based on sentiment dictionary
 
-##### 1.2.3 邻近匹配算法
+#### 2.1.1 Lexicon-based text sentiment analysis
 
- 邻近匹配算法是正向最大匹配算法的改进，因为正向正向最大匹配算法对每个不存在的长字符串都要进行一次二分搜索，算法复杂度太高，可以利用同一个首字符下的词条按升序排列这一条件，在找到某个字符串后，在其后增加一个字得到一个新字串，如果新字串在词典中出现，那么新词一定在原字串的后面，且相隔位置不会太远。这样就可以加快匹配进程。
+The idea of this method is very simple, that is, the text to be analyzed is divided into words according to a certain strategy, and the words are matched with entries in a machine dictionary, and if a certain string is found in the dictionary, the text is labeled accordingly.
 
- 
+In the case of the sentiment lexicon of Zhiwang, for example, the original dictionary divided words into three main categories by convention.
 
-还有其他的改进匹配算法，比如双向最大匹配法(Bi-directction Matching method，BM)，最短路径匹配算法(Shortest path match)等，不在本文中一一列举。他们的思想本质是相同的，但可以提高匹配的效率。
-
- 
-
-#### 1.3 优缺点分析：
-
-优点：这种方法思想简单且准确率高。
-
-缺点：1. 存在召回率比较低的情况。2. 需要人工编写情感词典和机器词典，编写成本和维护成本高昂。3. 在不同领域没有迁移性，需要特定领域专家进行分析编写。
-
- 
-
-### 2. 基于机器学习的方法:
-
-基于机器学习的方法，将文本情感分析作为一个有监督的分类问题。一般会将目标情感分为三类：积极、中性、消极。对训练文本进行人工标注，然后进行有监督的机器学习过程，并对测试数据用模型来预测结果。 
-
-处理过程一般可以分为文本预处理、使用特定的机器学习算法训练、使用模型对新数据预测。
-
-#### 2.1 文本预处理
-
-文本的预处理的目的是文本转换为机器可处理的结构。整体上来说，文本预处理模块包括去噪、特征提取、文本结构化表示等。
-
-##### 2.1.1 特征抽取
-
-中文最小语素是字，但是往往词语才具有更明确的语义信息，但是随着分词，可能出现词语关系丢失的情况。N-gram方法正好解决了这个问题，它也是传统机器学习分类任务中最常用的方法。 下面将简要介绍N-gram模型。
-
-N-gram模型假设第n个词的出现只与前面n-1个词相关，而与其它任何词都不相关。假设句子T是由词序列![img](README.assets/clip_image002.png)组成的，那么T出现的概率，可以写成
-
-![img](README.assets/clip_image004.png)
-
- 但是这种方法会使得参数空间过大和数据稀疏严重。为了解决这个问题，引入了马尔科夫假设：一个词的出现仅仅依赖于它前面出现的有限的一个或者几个词。
-
- 如果一个词的出现仅依赖于它前面出现的一个词，那么我们就称之为bigram。
-
-![img](README.assets/clip_image006.png)
-
-在实践中用的最多的就是bigram。高于四元的用的很少，因为训练它需要更庞大的语料，而且数据稀疏严重，时间复杂度高，精度却提高的不多。N元模型就是假设当前词的出现概率只同它前面的N-1个词有关。
+Affective words (positive evaluation words, positive emotion words, negative evaluation words, negative emotion words), degree words (from the heaviest degree of most to the degree of least in descending order, with 5 levels) and negation words. Based on the above features, the presence of negation words can be used to discriminate whether to perform lexical polarity reversal, the presence of degree words can give different scores to different emotion words, and emotion words can be integrated into two parts: positive words and negative words.
 
  
 
-##### 2.1.2 文本向量化
+#### 2.1.2 Summary of word division methods for text
 
-对抽取出来的特征，向量化是一个很重要的过程，是实现由人可以理解的文本转换为计算机可以处理数据的重要一步。这一步最常用到的就是词袋模型（bag-of-words ）以及最近新出的连续分布词向量模型（word Embedding）。词袋模型长度为整个词表的长度，词语对应维度置为词频，文档的表示往往比较稀疏且维度较高。Embedding的表示方式，能够有效的解决数据稀疏且降维到固定维度，更好的表示语义信息。对于文档表示，词袋模型可以直接叠加，而Embedding的方法可以使用深度学习的方法，通过pooling得到最终表示。
+Before dictionary matching, we need to divide the text into words according to certain strategies, and this paper summarizes some word division methods based on machine dictionaries.
+
+##### 2.1.2.1 Forward maximum matching algorithm MM
+
+First, we take m characters of the statement to be cut from left to right as the matching field, with m being the number of longest words in the machine dictionary. Then we look up the machine dictionary to perform a match. If the match is successful, this matching field is cut out as a word. If the match is unsuccessful, the last word of this matching field is removed, and the remaining string is used as a new matching field for matching again. The above process is repeated until all words are cut out.
+
+##### 2.1.2.2 Reverse Maximum Matching Algorithm RMM
+
+This algorithm is the reverse of forward maximal matching (the order of maximal matching does not start from the first letter, but from the end). If the matching is unsuccessful, the top word of the matching field is removed. The experiment shows that the reverse maximal matching algorithm is better than the forward maximal matching algorithm.
+
+##### 2.1.2.3 Neighborhood Matching Algorithm
+
+The neighbor matching algorithm is an improvement of the forward max matching algorithm. The forward max matching algorithm performs a dichotomous search for each long string that does not exist, resulting in a high complexity of the algorithm. It can be improved by using the condition that the words under the same initial character are arranged in ascending order. After finding a certain string, a word is added after it to get a new string. If the new string appears in the dictionary, the new word must be after the original string and not too far apart. This will speed up the matching process.
 
  
 
-##### 2.1.3 特征选择
-
-在机器学习分类算法的使用过程中，特征好坏直接影响机器的准确率及召回率。选择有利于分类的特征，可以有效的减少训练开支及防止模型过拟合，尤其是数据量较大的情况下，这一部分工作的重要性更加明显。将所有的训练语料输入选择最有效的特征，主要的方法有信息熵，dp深层感知器等等。
+There are other improved matching algorithms, such as Bi-directive Matching method (BM), Shortest path match, etc., which are not listed in this paper. All of them can improve the efficiency of matching.
 
  
 
-#### 2.2 分类算法的选择
+#### 2.1.3 Advantages and disadvantages analysis
 
-文本转换为机器可处理的结构后，接下来便要选择进行机器学习的分类算法。使用率比较高的是深度学习（CNN，RNN）和支持向量机（SVM）。深度学习的方法，运算量大，但准确率较高。而支持向量机则是比较传统的方法，其准确率及数据处理能力也比较出色，很多人都在用它来做分类任务。
+Pros: This method is simple in theory and has a high accuracy rate.
+
+Disadvantages: 1. there is a relatively low recall rate. 2. it requires manual writing of sentiment dictionaries and machine dictionaries, which is costly to write and maintain. 3. there is no migration in different domains and requires domain-specific experts for analysis and writing.
 
  
 
-##### 2.2.1 基于SVM的分类算法
+### 2.2 Machine learning based approach
 
-SVM(Support Vector Machine)，中文名为支持向量机，是 Vapnik 等人在对线性分类器提出了另一种设计最佳准则。
+The machine learning based approach treats text sentiment analysis as a supervised classification problem. The target sentiment is generally classified into three categories: positive, neutral, and negative. The training text is manually annotated, and then a supervised machine learning process is performed and the test data is used to predict the results with a model.
 
-对于线性可分的数据，可以画出特点一条直线直接将元组分开。对于非线性不可分的数据，SVM 使用一种非线性映射，将原训练数据映射到较高的维。从 而使得高维特征空间采用线性算法对样本的非线性特征进行线性分析成为可 能。在新的高维空间上，SVM 会基于结构风险最小化理论搜索线性最佳分离超 平面，即将一类元组与其他类分离的决策边界。SVM 使用支持向量(即基本训 练元组)和边缘(由支持向量定义)发现该超平面。SVM 的学习可以表示为凸优化问题，因此能利用已知的有效算法发现目标 函数的全局最小值。而其他分类方法，如基于规则的分类器和人工神经网络，大多采用一种基于贪心学习的策略来搜索假设空间，一般只能获得局部最优解。SVM不仅可以解决两类问题，而且可以处理多分类问题。经典的支持向量机算法只给出了二类分类的算法，而在数据挖掘的实际应用中，一般要解决多类的分类问题。可以通过多个二类支持向量机的组合来解决。主要有一对多组合模式、一对一组合模式和SVM决策树；再就是通过构造多个分类器的组合来解决。主要原理是克服SVM固有的缺点，结合其他算法的优势，解决多类问题的分类精度。如：与粗集理论结合，形成一种优势互补的多类问题的组合分类器。[3]
+The process can generally be divided into text pre-processing, training using specific machine learning algorithms, and prediction using models on new data.
 
-* 优点：
+#### 2.2.1 Text preprocessing
 
-(1)SVM 是一种有坚实理论基础的新颖的小样本学习方法。它基本上不涉及概率测度及大数定律等,因此不同于现有的统计方法。从本质上看,它避开了从归纳到演绎的传统过程,实现了高效的从训练样本到预报样本的“转导推理”,大大简化了通常的分类和回归等问题。
+The purpose of text preprocessing is to convert of text into a machine-processable structure. Overall, the text preprocessing module includes denoising, feature extraction, and structured representation of text.
 
-(2)SVM 的最终决策函数只由少数的支持向量所确定,计算的复杂性取决于支持向量的数目,而不是样本空间的维数,这在某种意义上避免了“维数灾难”。
+##### 2.2.1.1 Feature Extraction
 
-(3)少数支持向量决定了最终结果,这不但可以帮助我们抓住关键样本、“剔除”大量冗余样本,而且注定了该方法不但算法简单,而且具有较好的鲁棒性。
+The smallest semantic element in Chinese is the word, but it is often the word that has more explicit semantic information. With word separation, word relationships may be lost. The N-gram method solves exactly this problem, and it is one of the most commonly used method in traditional machine learning classification tasks. The N-gram model is briefly described below.
 
-* 缺点：SVM算法对大规模训练样本难以实施
+The N-gram model assumes that the occurrence of the nth word is only related to the previous n-1 words and not to any other words. Assuming that the sentence T is composed of a sequence of words $W_1,W_2,...,W_n$, the probability of occurrence of T, which can be written as
+$$
+P(T)=P(W_1W_2...W_n)=P(W_1)P(W_2|W_1)...P(W_n|W_1W_2...W_{n-1})
+$$
+But this approach would make the parameter space too large and the data sparse severely. To solve this problem, the Markov assumption is introduced: the occurrence of a word depends only on a finite number of words or words that occur before it.
 
-##### 2.2.2 基于深度学习的分类算法
+ 
 
-可以处理分类问题的深度学习模型种类繁多，比如fastText、TextCNN、TextRNN、分层注意网络（Hierarchical Attention Network）、具有注意的seq2seq模型（seq2seq with attention）、Transformer、动态记忆网络（Dynamic Memory Network）等等，本文主要介绍经典的TextCNN，TextRNN模型。
+If the occurrence of a word depends on only one word preceding it, then we call it a bigram.
+$$
+P(T)=P(W_1W_2...W_n)=P(W_1)P(W_2|W_1)...P(W_n|W_1W_2...W_{n-1})\\
+\approx P(W_1)P(W_2|W_1)P(W_3|W_2)...P(W_n|W_{n-1})
+$$
+In practice, the bigram is the most used, but the one above quadratic is rarely used, because it requires a much larger corpus to train, and the data sparsity is severe, the time complexity is high, and the accuracy is not improved much. n-word model assumes that the occurrence probability of the current word is only related to the N-1 words before it. 
 
-* TextCNN
+##### 2.2.1.2 Text vectorization
 
-最初在图像领域取得了巨大成功，CNN可以捕捉局部相关性，具体到文本分类任务中可以利用CNN来提取句子中类似 n-gram 的关键信息。[4] 
+The quantization of the extracted features is an important step in converting human-understandable text into computer-processable data. This step is most commonly used in the bag-of-words model and the recently introduced continuous distribution word vector model (word Embedding). The length of the bag-of-words model is the length of the entire word list, and the corresponding dimension of the words is set to the word frequency. The representation of documents is often sparse and high-dimensional. The Embedding representation can effectively solve the sparse data and reduce the dimensionality to a fixed dimension, and better represent the semantic information. For document representation, bag-of-words model can be directly overlaid, while Embedding approach can use deep learning methods to get the final representation by pooling.
 
-![/var/folders/dt/k765yx592l179w7ykmx3cm7r0000gn/T/com.microsoft.Word/WebArchiveCopyPasteTempFiles/v2-ab904178abf9241329e3e2d0fa7c0584_1440w.png](README.assets/clip_image007.png)
+##### 2.2.1.3 Feature selection
 
-以下图的TextCNN结构的详细过程原理图为例[5] ：
+In the process of using machine learning classification algorithms, whether features are good or bad directly affects the accuracy and recall rate of the algorithm. Selecting features that are good for classification can effectively reduce training expenses and prevent model overfitting, especially when the data volume is large, the importance of this part of the work is more obvious. The main methods to select the most effective features from all training corpus inputs are information entropy, dp deep perceptron, etc.
 
-![/var/folders/dt/k765yx592l179w7ykmx3cm7r0000gn/T/com.microsoft.Word/WebArchiveCopyPasteTempFiles/v2-bb10ad5bbdc5294d3041662f887e60a6_1440w.png](README.assets/clip_image008.png)
+ 
 
-TextCNN详细过程：第一层是图中最左边的7乘5的句子矩阵，每行是词向量，维度=5，这个可以类比为图像中的原始像素点了。然后经过有 filter_size=(2,3,4) 的一维卷积层，每个filter_size 有两个输出 channel。第三层是一个1-max pooling层，这样不同长度句子经过pooling层之后都能变成定长的表示了，最后接一层全连接的 softmax 层，输出每个类别的概率。
+#### 2.2.2 Selection of classification algorithms
 
-* TextRNN
+After the text is converted into a machine-processable structure, the next step is to select a classification algorithm for machine learning. The most used ones are deep learning (CNN, RNN) and support vector machines (SVM). The deep learning approach is more computationally intensive, but more accurate. Support vector machine, on the other hand, is a more traditional method, with better accuracy and data processing capability. 
 
-尽管TextCNN能够在很多任务里面能有不错的表现，但CNN的问题是固定 filter_size 的视野，一方面无法建模更长的序列信息，另一方面 filter_size 的超参调节也很繁琐。CNN本质是做文本的特征表达工作，而自然语言处理中更常用的是递归神经网络（RNN, Recurrent Neural Network），能够更好的表达上下文信息。具体在文本分类任务中，Bi-directional RNN（实际使用的是双向LSTM）从某种意义上可以理解为可以捕获变长且双向的的 "n-gram" 信息。
+##### 2.2.2.1 SVM-based classification algorithm
 
-TextRNN有很多结构，下图LSTM用于网络结构原理示意图[6]，示例中的是利用最后一个词的结果直接接全连接层softmax输出。
+SVM (Support Vector Machine), is an alternative design best criterion for linear classifiers proposed by Vapnik et al.
 
-![/var/folders/dt/k765yx592l179w7ykmx3cm7r0000gn/T/com.microsoft.Word/WebArchiveCopyPasteTempFiles/v2-92e49aef6626add56e85c2ee1b36e9aa_1440w.png](README.assets/clip_image009.png)
+For linearly separable data, a straight line can be drawn to separate the components directly. For nonlinearly indistinguishable data, SVM uses a nonlinear mapping that maps the original training data to a higher dimension. This makes it possible to perform linear analysis of the nonlinear features of the samples using linear algorithms in the high-dimensional feature space. The SVM finds this hyperplane using support vectors (i.e., the basic training tuples) and edges (defined by support vectors). The minimum value. Other classification methods, such as rule-based classifiers and artificial neural networks, mostly use a greedy learning-based strategy to search the hypothesis space and generally only obtain locally optimal solutions. SVM can not only solve two types of problems, but can also handle multi-classification problems. The classical support vector machine algorithm only gives algorithms for two-class classification, while in practical applications of data mining, multi-class classification problems are generally to be solved. It can be solved by the combination of multiple two-class support vector machines. There are mainly one-to-many combinatorial models, one-to-one combinatorial models and SVM decision trees; then it is solved by constructing combinations of multiple classifiers. The main principle is to overcome the inherent shortcomings of SVM and combine the advantages of other algorithms to solve the classification accuracy of multi-class problems. For example, it is combined with rough set theory to form a combined classifier for multi-class problems with complementary advantages. [[3]](# 6.  References)
 
-## 三、  研究方法
+* **Advantages**
 
-本文基于Pytorch版本的Transformer库，使用了bert模型进行文本情感分类，采用了与训练模型"bert-base-chinese"，并使用dropout防止过拟合问题。最终的参数：学习率2e-5，训练轮数12轮，dropout=0.5，截断truncation=True，max_length=256。 
+  (1) SVM is a novel small sample learning method with a solid theoretical foundation. It is different from existing statistical methods because it basically does not involve probability measures and the law of large numbers. In essence, it avoids the traditional process from induction to deduction, and achieves efficient "transductive inference" from training samples to forecast samples, which greatly simplifies the usual problems of classification and regression.
 
-接下来，对bert模型进行简单介绍。
+  (2) The final decision function of SVM is determined by only a small number of support vectors, and the complexity of the computation depends on the number of support vectors rather than the dimensionality of the sample space, which avoids the "dimensionality disaster" to some extent.
 
-###  1．bert的输入和输出
+  (3) A small number of support vectors determines the final result, which not only helps us to catch the key samples and "eliminate" a large number of redundant samples, but also predestines the method to be not only simple, but also has good robustness.
 
-bert（Bidirectional Encoder Representations from Transformers）使用的是Transformer架构[7]，其最大的特点是抛弃了传统的RNN和CNN，通过Attention机制将任意位置的两个单词的距离转换成1，有效的解决了NLP中棘手的长期依赖问题。
+* **Disadvantages**
 
-BERT模型的目标是利用大规模无标注语料训练、获得文本的包含丰富语义信息的Representation，即：文本的语义表示，然后将文本的语义表示在特定NLP任务中作微调，最终应用于该NLP任务。模型输入除了字向量，还包含另外两个部分：
+  SVM algorithm is difficult to implement for large-scale training samples
 
-* 文本向量：该向量的取值在模型训练过程中自动学习，用于刻画文本的全局语义信息，并与单字/词的语义信息相融合
 
-* 位置向量：由于出现在文本不同位置的字/词所携带的语义信息存在差异（比如：“我爱你”和“你爱我”），因此，BERT模型对不同位置的字/词分别附加一个不同的向量以作区分。
+##### 2.2.2.2 Deep learning based classification algorithm
 
-最后，BERT模型将字向量、文本向量和位置向量的加和作为模型输入。特别地，在目前的BERT模型中，文章作者还将英文词汇作进一步切割，划分为更细粒度的语义单位（WordPiece），例如：将playing分割为play和##ing；此外，对于中文，目前作者尚未对输入文本进行分词，而是直接将单字作为构成文本的基本单位。模型输出则是输入各字对应的融合全文语义信息后的向量表示。对于不同的NLP任务，模型输入会有微调，对模型输出的利用也有差异。
+There are many kinds of deep learning models that can deal with classification problems, such as fastText, TextCNN, TextRNN, Hierarchical Attention Network, seq2seq with attention, Transformer, Dynamic Memory Network, etc. In this paper, we mainly introduce the classical TextCNN and TextRNN models.
+
+* **TextCNN**
+
+TextCNN is initially a great success in the image field. It can capture local relevance, specifically for text classification tasks can be used to extract key n-gram-like information in sentences. [[4]](# 6.  References) 
+
+<img src="README.assets/clip_image007.png" alt="/var/folders/dt/k765yx592l179w7ykmx3cm7r0000gn/T/com.microsoft.Word/WebArchiveCopyPasteTempFiles/v2-ab904178abf9241329e3e2d0fa7c0584_1440w.png" style="zoom:50%;" />
+
+The detailed process of TextCNN structure is illustrated in the following schematic diagram [[5]](# 6.  References).
+
+<img src="README.assets/clip_image008.png" alt="/var/folders/dt/k765yx592l179w7ykmx3cm7r0000gn/T/com.microsoft.Word/WebArchiveCopyPasteTempFiles/v2-bb10ad5bbdc5294d3041662f887e60a6_1440w.png" style="zoom:50%;" />
+
+Textcnn detailed process: the first layer is the leftmost sentence matrix of 7 times 5, each line is a word vector, dimension = 5, which can be compared to the original pixel in the image. And then through the filter_ Size = (2,3,4) for each filter_ Size has two output channels. The third layer is a 1-max pooling layer, so that sentences of different lengths can become fixed length representations after passing through the pooling layer. Finally, a fully connected softmax layer is connected to output the probability of each category.
+
+* **TextRNN**
+
+Although TextCNN can perform well in many tasks, the problem of CNN is the vision of fixed filter_size, which cannot model longer sequence information on the one hand, and the superparameter adjustment of filter_size is tedious on the other hand. In natural language processing, recurrent neural networks (RNN, Recurrent Neural Network) are more commonly used, which can better represent contextual information. Specifically in text classification tasks, Bi-directional RNNs (actually using bi-directional LSTMs) can be understood in a sense to capture variable length and bi-directional "n-gram" information.
+
+There are many structures of TextRNN. The following figure LSTM is used for the schematic of network structure [[6]](# 6.  References), which is using the result of the last word directly connected to the fully connected layer softmax output.
+
+<img src="README.assets/clip_image009.png" alt="/var/folders/dt/k765yx592l179w7ykmx3cm7r0000gn/T/com.microsoft.Word/WebArchiveCopyPasteTempFiles/v2-92e49aef6626add56e85c2ee1b36e9aa_1440w.png" style="zoom:50%;" />
+
+
+
+## 3. Research Methodology
+
+This paper uses a bert model for text sentiment classification based on the Pytorch version of the Transformer library, the same training model "bert-base-chinese", and dropout to prevent overfitting problems. The final parameters: learning rate 2e-5, number of training rounds 12, dropout=0.5, truncation=True, max_length=256.
+
+Next, a brief introduction of the bert model is given.
+
+###  3.1 BERT's input and output
+
+BERT (Bidirectional Encoder Representations from Transformers) uses the Transformer architecture [[7]](# 6.  References), whose biggest feature is that it discards the traditional RNN and CNN and converts the distance of two words at any position to 1 through the Attention mechanism, which effectively solves the tricky long-term dependency problem in NLP.
+
+The goal of the BERT model is to use a large-scale unlabeled corpus to train and obtain a representation of the text containing rich semantic information, i.e., the semantic representation of the text, and then fine-tune the semantic representation of the text in a specific NLP task and finally apply it to that NLP task. The model input contains two other components in addition to the word vector.
+
+* **Text vector**: the values of this vector are automatically learned during the model training process and are used to portray the global semantic information of the text and fuse it with the semantic information of single words/words.
+
+* **Position vector**: Since there is a difference in the semantic information carried by words/words appearing in different positions of the text (e.g., "I love you" and "you love me"), the BERT model appends a different vector to the words/words in different positions to differentiate them.
+
+Finally, the BERT model takes the sum of the word vector, text vector and position vector as model inputs. In particular, in the current BERT model, the authors further cut the English vocabulary into finer-grained semantic units (WordPieces), e.g., splitting playing into playing and ##ing; in addition, for Chinese, the authors have not yet split the input text into words, but directly use a single word as the basic unit of the text. The model output is then a vector representation of the fused full-text semantic information corresponding to each word of the input. For different NLP tasks, the model inputs are fine-tuned and the utilization of the model outputs varies.
 
 ![img](README.assets/clip_image011.png)
 
-### 2．模型结构
 
-了解了bert模型的输入/输出和预训练过程之后，我们来看一下bert模型的内部结构。前面提到过，BERT模型的全称是：Bidirectional Encoder Representations from Transformer，也就是说，Transformer是组成BERT的核心模块，而Attention机制又是Transformer中最关键的部分。利用Attention机制构建Transformer模块，在此基础上，用多层Transformer组装BERT模型。
 
-![img](README.assets/clip_image012.jpg)
+### 3.2 Model structure
 
-## 四、  实验结果和分析
+After understanding the input/output and pre-training process of the BERT model, let us look at the internal structure of the BERT model. As mentioned earlier, the full name of the BERT model is: Bidirectional Encoder Representations from Transformer, which means that the Transformer is the core module of BERT. The Attention mechanism is the most critical part of the Transformer. The Transformer module is constructed using the Attention mechanism, and on this basis, the BERT model is assembled using a multi-layer Transformer.
 
-由于bert模型对输入样本长度的限制，训练过程中都需要进行截断操作。
+<img src="README.assets/clip_image012.jpg" alt="img" style="zoom:50%;" />
 
-第一次采用512词截断，训练了12轮，学习率为2e-5，在dev集准确率acc=0.822
 
-在test集的结果如下：
+
+## 4. Experimental results and analysis
+
+Due to the limitation of the bert model on the length of input samples, truncation operations are required during the training process.
+
+The first time 512-word truncation was used, 12 rounds were trained with a learning rate of 2e-5, and the accuracy in the dev set acc=0.822.
+
+The results on the test set are as follows.
 
 | F1(macro)   | accuracy    | precision | recall    |
 | ----------- | ----------- | --------- | --------- |
 | 0.813570815 | 0.850666667 | 0.8167606 | 0.8106913 |
 
- 
+ The second time using 256-word truncation, 25 rounds were trained with a learning rate of 2e-5, and the accuracy in the dev set acc=0.819.
 
-第二次采用256词截断，训练了25轮，学习率为2e-5，在dev集准确率acc=0.819
-
-在test集的结果如下：
+The results on the test set are as follows.
 
 | F1(macro)  | accuracy | precision  | recall     |
 | ---------- | -------- | ---------- | ---------- |
@@ -208,15 +249,19 @@ BERT模型的目标是利用大规模无标注语料训练、获得文本的包�
 
  
 
-可以看出，各指标都有下降。尽管更早截断可以提升训练速度，有更多的训练轮次，但是损失了更多信息，导致模型效果下降。
+It can be seen that there is a decrease in all metrics. Although earlier truncation can improve the training speed and have more training rounds, more information is lost, which leads to a decrease in model effectiveness.
 
-## 五、   结论
 
-文本情感分析是一个随着互联网发展而出现的研究方向，在用户评论分析与决策，舆情监控，信息预测等方面具有很强的现实意义。文本情感分析的方法可以分为基于情感词典的方法和基于神经网络的方法。
 
-本文通过使用Bert模型对实际的文本数据集进行训练，在文本情感分类中获得了较好的效果。
+## 5. Conclusion
 
-## 六、  参考文献
+Text sentiment analysis is a research direction that emerged with the development of the Internet and has strong practical significance in user comment analysis and decision making, opinion monitoring, and information prediction. The methods of text sentiment analysis can be divided into methods based on sentiment dictionaries and methods based on neural networks.
+
+In this paper, we obtained better results in text sentiment classification by using Bert model to train on actual text dataset.
+
+
+
+## 6.  References
 
 1. Zhang L, Wang S, Liu B. Deep Learning for Sentiment Analysis : A Survey[J].2018
 
